@@ -5,22 +5,21 @@ var schedArray = [];
 if (localStorage.getItem("schedArray")){
     var arrayStr = localStorage.getItem("schedArray");
     var schedArray = JSON.parse(arrayStr);
-    console.log(schedArray);
 }else{
     var schedArray = [
-    {time: "9am", event:"Put event here"},
-    {time: "10am", event:"Put event here"},
-    {time: "11am", event:"Put event here"},
-    {time: "12pm", event:"Put event here"},
-    {time: "1pm", event:"Put event here"},
-    {time: "2pm", event:"Put event here"},
-    {time: "3pm", event:"Put event here"},
-    {time: "4pm", event:"Put event here"},
-    {time: "5pm", event:"Put event here"}
+    {time: "9", event:"Put event here"},
+    {time: "10", event:"Put event here"},
+    {time: "11", event:"Put event here"},
+    {time: "12", event:"Put event here"},
+    {time: "13", event:"Put event here"},
+    {time: "14", event:"Put event here"},
+    {time: "15", event:"Put event here"},
+    {time: "16", event:"Put event here"},
+    {time: "17", event:"Put event here"}
     ];
 }
 
-//creates schedule from local storage
+//creates schedule from array
 var writeSchedule = function(){
     for (let i = 0; i < schedArray.length; i++) {
         //adds a time-block div for each timeframe
@@ -28,73 +27,80 @@ var writeSchedule = function(){
 
         //variable to store time ID for each div
         let timeBlockID = $("#"+schedArray[i].time).attr("id")
-        console.log(timeBlockID);
-        console.log(schedArray[i].time);
 
         //variable for description in each array item
         let eventDescription = schedArray[i].event;
 
         //creates inner html for each div if ID matches time for array item
         if (schedArray[i].time === timeBlockID){
-            console.log("Hello there");
-            $("#" + timeBlockID).append("<div class = 'hour col-1'><p>" + timeBlockID + "</p></div><p class = 'col-10 description "+ timeBlockID + "Text' >"+eventDescription+"</p> <button class= 'col-1 saveBtn'><i>+</i></button>");
-        }
-        //$(".time-block").attr("id", schedArray[i].time)
-        // $(".time-block").append("<div class=row'></div>");
-        // $("row").append("<div class='hour col-1'></div>");
-        // $(".hour").append("<p class='col-10 description'></p>");
-        // $(".description").val(schedArray[i].time);
+            $("#" + timeBlockID).append("<div class = 'hour col-1'><p>" + moment().hour(timeBlockID).format("hA") + "</p></div><textarea class = 'col-10 description "+ timeBlockID + "Text' >"+eventDescription+"</textarea> <button class= 'col-1 saveBtn'><i>+</i></button>");
+        };
     };
 };
 
+//checks for current date and displays in html
+var currentDate = moment().format("MM-DD-YYYY");
+$('#currentDay').text(currentDate)
+
+//calls writeSchedule to create schedule on page
 writeSchedule();
 
-//allows for description to be edited
-$(".time-block").on("click","p",function(){
-   //read current text
-    var text = $(this).text().trim();
+//saves current hour
+var hour = moment().format('hh');
 
-    //stores current classes
-    var prevClass = $(this).attr("class");
-    // console.log(prevClass);
+//saves current minute
+var currentMin = moment().format("m");
 
-    //replace p with textarea
-    var textInput = $("<textarea>").addClass(prevClass).val(text);
-    $(this).replaceWith(textInput);
+//function to adjust class for description based on current hour
+var descriptClass = function(){
+    for (let i = 0; i < schedArray.length; i++) {
+        var timeID = $("#" +schedArray[i].time).attr("id");
 
-    //change focus to textarea
-    textInput.trigger("focus");
-})
+        if(Number(hour) > Number(timeID)){
+            $('.'+timeID+"Text").attr('class',"col-10 description "+ timeID + "Text past");
+        } else if (Number(hour) < Number(timeID)){
+            $('.'+timeID+"Text").attr('class',"col-10 description "+ timeID + "Text future");
+        } else {
+            $('.'+timeID+"Text").attr('class',"col-10 description "+ timeID + "Text present");
+        };
+        };
+};
 
+//changes class during initial startup
+descriptClass();
 
-//saves description and changes textarea back to p
+//check current hour and runs descriptClass at change of hour
+var checkHour = function(){
+    var checkTime = setInterval(function(){
+        //changes class once the hour changes
+         if(currentMin === "0"){
+             descriptClass();
+         };
+    }, 1000);
+};
+
+//initializes checkHour function
+checkHour();
+
+//saves description when save button is clicked
 $(".saveBtn").click(function(){
 
     //fetches parent div ID for save button clicked
     //ParentID identifies the time associate with the text
     var parentID = $(this).parent().attr('id');
-    console.log(parentID);
 
     //variable for textarea class
     var textInputClass = '.' + parentID +'Text'
-    // console.log($(textInputClass).val());
-
-    //stores current classes
-    var prevClass = $(textInputClass).attr('class');
 
     //read current input text
     var inputText = $(textInputClass).val();
 
-    //changes textarea back to <p>
-    var updatedP = $("<p>").addClass(prevClass).text(inputText);
-
     //save text to array
     var indexPos = ""
 
-        //finds time position in array
+        //finds time position in schedArray
         for (let i = 0; i < schedArray.length; i++){
             if (schedArray[i].time === parentID){
-                console.log("found it!")
                 indexPos = i;
             }
         };
@@ -102,7 +108,6 @@ $(".saveBtn").click(function(){
 
     //save array to localstorage
     var schedArrayString = JSON.stringify(schedArray);
-    console.log(schedArrayString);
     localStorage.setItem('schedArray',schedArrayString);
 
     //console.log("hello there")
