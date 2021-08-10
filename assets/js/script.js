@@ -46,7 +46,7 @@ $('#currentDay').text(currentDate)
 writeSchedule();
 
 //saves current hour
-var hour = moment().format('hh');
+var hour = moment().format('HH');
 
 //saves current minute
 var currentMin = moment().format("m");
@@ -55,7 +55,6 @@ var currentMin = moment().format("m");
 var descriptClass = function(){
     for (let i = 0; i < schedArray.length; i++) {
         var timeID = $("#" +schedArray[i].time).attr("id");
-
         if(Number(hour) > Number(timeID)){
             $('.'+timeID+"Text").attr('class',"col-10 description "+ timeID + "Text past");
         } else if (Number(hour) < Number(timeID)){
